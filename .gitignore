@@ -15,3 +15,7 @@
 *.exe
 *.out
 *.app
+
+# project files
+*.cproject
+*.project
