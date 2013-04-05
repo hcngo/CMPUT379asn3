@@ -91,7 +91,7 @@ int setup(int iniSaucers) {
 	clear();
 	mvprintw(LINES - 1, 0, "'Q' to quit, ',' to move left,"
 			" '.' to move right, 'f' fires "); // TODO
-	struct launchSite ls = {LINES - 3, (int)COLS/2, "^"};
+	struct launchSite ls = {LINES - 3, (int)COLS/2, "|"};
 	lauSi = ls;
 
 	return numSaucers;
@@ -130,7 +130,7 @@ void updateLaunchSite(struct launchSite * ls, const char keyClick ){
 			ls->col--;
 		}
 	}else if(keyClick == '.'){
-		if(ls->col < COLS - 1){
+		if(ls->col < COLS - 2){
 			ls->col++;
 		}
 	}

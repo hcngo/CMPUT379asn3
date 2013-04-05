@@ -71,12 +71,14 @@ void *updateTimer(void *arg) {
 			int slot = findFreeSaucerThread();
 			if (slot != -1) {
 				saucerArray[slot].row = rand() % SAUCERS_ROWS;
+				saucerArray[slot].col = 0;
 				saucerArray[slot].delay = 1 + (rand() % 15);
 				saucerArray[slot].threadStatus = 1;
 				saucerArray[slot].shape = "<--->";
 
 				pthread_create(&saucerThreads[slot], NULL,
 						drawSaucer, &saucerArray[slot]); // TODO
+				saucerArrLen++;
 			}
 			timer = 0;
 			intervalSaucer = (rand() % 4 + 1) * RANDOM_INTERVAL;
@@ -101,6 +103,7 @@ int main(int ac, char *av[]) {
 			endwin();
 			exit(0);
 		}
+		saucerArrLen++;
 	}
 
 	if (pthread_create(&timerThread, NULL, updateTimer, NULL)) {
@@ -111,6 +114,13 @@ int main(int ac, char *av[]) {
 
 	if (pthread_create(&displayStatusThread, NULL, displayStatus,
 			&gameStatus)) { // TODO
+		fprintf(stderr, "error creating thread");
+		endwin();
+		exit(0);
+	}
+
+	if (pthread_create(&launchSiteThread, NULL, displayLaunchSite,
+			&lauSi)) { // TODO
 		fprintf(stderr, "error creating thread");
 		endwin();
 		exit(0);

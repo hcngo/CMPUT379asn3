@@ -123,6 +123,9 @@ extern pthread_mutex_t drawMutex;
 extern struct saucer saucerArray[MAX_THREADS];
 extern struct status gameStatus;
 extern struct launchSite lauSi;
+extern int saucerArrLen;
+
+extern int rocketArrLen;
 
 void updateLaunchSite(struct launchSite * ls, const char keyClick );
 
@@ -134,7 +137,7 @@ void *drawSaucer(void *arg);
 
 int setup(int iniSaucers);
 
-void printSaucer(const struct saucer *info, int col, const char * str);
+void printSaucer(const struct saucer *info, const char * str);
 
 /*
  * find a free slot (thread data) to faciliate a new thread.
