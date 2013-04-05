@@ -27,6 +27,8 @@
 
 #define	SAUCER_SHAPE	"<--->"
 
+#define ERASE_SHAPE	"     "
+
 /*
  * random time interval saucers are created
  */
@@ -53,6 +55,11 @@ struct saucer {
 	 * The row the saucer occupies
 	 */
 	int row;
+
+	/*
+	 * the column the saucer occupies
+	 */
+	int col;
 
 	/*
 	 * delay in time units
@@ -106,11 +113,20 @@ struct status {
 	int escapedSaucers;
 };
 
+struct launchSite {
+	int row;
+	int col;
+	char * shape;
+};
 
 extern pthread_mutex_t drawMutex;
 extern struct saucer saucerArray[MAX_THREADS];
 extern struct status gameStatus;
+extern struct launchSite lauSi;
 
+void updateLaunchSite(struct launchSite * ls, const char keyClick );
+
+void *displayLaunchSite(void *arg);
 
 void *displayStatus(void *arg);
 
@@ -125,6 +141,5 @@ void printSaucer(const struct saucer *info, int col, const char * str);
  * Return the free position or -1 if there is no free slot.
  */
 int findFreeSaucerThread();
-
 
 #endif /* HELPERS_H_ */

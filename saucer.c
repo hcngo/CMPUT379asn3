@@ -61,6 +61,7 @@
 int timer = 0;
 int intervalSaucer = RANDOM_INTERVAL;
 pthread_t saucerThreads[MAX_THREADS]; /* the threads*/
+pthread_t launchSiteThread;
 
 void *updateTimer(void *arg) {
 	while (1) {
@@ -118,9 +119,17 @@ int main(int ac, char *av[]) {
 	/* process user input */
 	while (1) {
 		c = getch();
-		if (c == 'Q')
+		if (c == 'Q') {
 			break;
-
+		} else if (c == ',' || c == '.') {
+			updateLaunchSite(&lauSi, c);
+			if (pthread_create(&launchSiteThread, NULL,
+					displayLaunchSite, &lauSi)) { // TODO
+				fprintf(stderr, "error creating thread");
+				endwin();
+				exit(0);
+			}
+		}
 	}
 
 	/* cancel all the threads */

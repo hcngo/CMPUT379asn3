@@ -8,8 +8,12 @@
 #include "helpers.h"
 
 struct saucer saucerArray[MAX_THREADS];
+int saucerArrLen = 0;
 
 struct rocket rocketArray[MAX_THREADS];
+int rocketArrLen = 0;
+
+struct launchSite lauSi;
 
 struct status gameStatus = { 0, INIROCKETS, 0 };
 
@@ -24,13 +28,18 @@ pthread_mutex_t statusMutex = PTHREAD_MUTEX_INITIALIZER;
  * Return the free position or -1 if there is no free slot.
  */
 int findFreeSaucerThread() {
-	int i;
-	for (i = 0; i < MAX_THREADS; i++) {
-		if (saucerArray[i].threadStatus == 0) {
-			return i;
+
+	if (saucerArrLen < MAX_THREADS) {
+		return saucerArrLen;
+	} else {
+		int i;
+		for (i = 0; i < MAX_THREADS; i++) {
+			if (saucerArray[i].threadStatus == 0) {
+				return i;
+			}
 		}
+		return -1;
 	}
-	return -1;
 }
 
 /*
@@ -38,13 +47,17 @@ int findFreeSaucerThread() {
  * Return the free position or -1 if there is no free slot.
  */
 int findFreeRocketThread() {
-	int i;
-	for (i = 0; i < MAX_THREADS; i++) {
-		if (rocketArray[i].threadStatus == 0) {
-			return i;
+	if (rocketArrLen < MAX_THREADS) {
+		return rocketArrLen;
+	} else {
+		int i;
+		for (i = 0; i < MAX_THREADS; i++) {
+			if (rocketArray[i].threadStatus == 0) {
+				return i;
+			}
 		}
+		return -1;
 	}
-	return -1;
 }
 
 int setup(int iniSaucers) {
@@ -65,6 +78,7 @@ int setup(int iniSaucers) {
 	srand(getpid());
 	for (i = 0; i < numSaucers; i++) {
 		saucerArray[i].row = rand() % SAUCERS_ROWS; /* the row	*/
+		saucerArray[i].col = 0;
 		saucerArray[i].delay = 1 + (rand() % 15); /* a speed	*/
 		saucerArray[i].threadStatus = 1;
 		saucerArray[i].shape = "<--->";
@@ -76,14 +90,16 @@ int setup(int iniSaucers) {
 	noecho();
 	clear();
 	mvprintw(LINES - 1, 0, "'Q' to quit, ',' to move left,"
-			" '.' to move right, 'SPACE' fires "); // TODO
+			" '.' to move right, 'f' fires "); // TODO
+	struct launchSite ls = {LINES - 3, (int)COLS/2, "^"};
+	lauSi = ls;
 
 	return numSaucers;
 }
 
-void printSaucer(const struct saucer *info, int col, const char * str) {
+void printSaucer(const struct saucer *info, const char * str) {
 	pthread_mutex_lock(&drawMutex); /* only one thread	*/
-	move( info->row, col);
+	move( info->row, info->col);
 	addch(' ');
 	/* at a the same time	*/
 	addstr(str);
@@ -99,7 +115,7 @@ void *displayStatus(void *arg) {
 	while (1) {
 		usleep(100000);
 		pthread_mutex_lock(&drawMutex);
-		mvprintw(LINES - 3, 0, "score: %d, rockets left: %d, "
+		mvprintw(LINES - 2, 0, "score: %d, rockets left: %d, "
 				"escaped saucers: %d", stat->score,
 				stat->rocketsLeft, stat->escapedSaucers); // TODO
 		move(LINES-1, COLS-1);
@@ -108,23 +124,47 @@ void *displayStatus(void *arg) {
 	}
 }
 
+void updateLaunchSite(struct launchSite * ls, const char keyClick ){
+	if(keyClick == ','){
+		if(ls->col > 0){
+			ls->col--;
+		}
+	}else if(keyClick == '.'){
+		if(ls->col < COLS - 1){
+			ls->col++;
+		}
+	}
+}
+
+void *displayLaunchSite(void *arg) {
+	struct launchSite * info = arg;
+	pthread_mutex_lock(&drawMutex);
+	move(info->row, info->col);
+	addch(' ');
+	addstr(info->shape);
+	addch(' ');
+	move(LINES-1, COLS-1);
+	refresh(); /* and show it */
+	pthread_mutex_unlock(&drawMutex);
+	pthread_exit(NULL);
+}
+
 /* the code that runs in each thread */
 void *drawSaucer(void *arg) {
 	struct saucer *info = arg; /* point to info block	*/
 	int len = strlen(info->shape);
-	int col = 0;
 
 	while (1) {
 		usleep(info->delay * TUNIT);
 
-		printSaucer(info, col, info->shape);
+		printSaucer(info, info->shape);
 
 		/* move item to next column and check for bouncing	*/
 
-		col++;
+		info->col++;
 
-		if (col + len >= COLS) {
-			printSaucer(info, col, "     ");
+		if (info->col + len >= COLS) {
+			printSaucer(info, ERASE_SHAPE);
 			info->threadStatus = 0;
 			/*
 			 * Update escaped saucers.
