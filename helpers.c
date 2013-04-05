@@ -110,6 +110,17 @@ void printSaucer(const struct saucer *info, const char * str) {
 	pthread_mutex_unlock(&drawMutex); /* done with curses	*/
 }
 
+void printRocket(const struct rocket *info, const char * str){
+	pthread_mutex_lock(&drawMutex);
+	move (info->row, info->col);
+	addch(' ');
+	move (info->row + 1, info->col);
+	addstr(str);
+	move(LINES - 1, COLS - 1);
+	refresh();
+	pthread_mutex_unlock(&drawMutex);
+}
+
 void *displayStatus(void *arg) {
 	struct status * stat = arg;
 	while (1) {
@@ -164,7 +175,7 @@ void *drawSaucer(void *arg) {
 		info->col++;
 
 		if (info->col + len >= COLS) {
-			printSaucer(info, ERASE_SHAPE);
+			printSaucer(info, ERASE_SHAPE_SAUCER);
 			info->threadStatus = 0;
 			/*
 			 * Update escaped saucers.
@@ -172,7 +183,8 @@ void *drawSaucer(void *arg) {
 			pthread_mutex_lock(&statusMutex);
 			gameStatus.escapedSaucers++;
 			if (gameStatus.escapedSaucers == MAX_ESCAPED_SAUCERS) {
-				fprintf(stderr, "error creating thread");
+				mvprintw(LINES/2, COLS/2,"YOU LOSE!");
+				usleep(2000000);
 				endwin();
 				exit(0);
 			}
@@ -185,5 +197,25 @@ void *drawSaucer(void *arg) {
 
 void *drawRocket(void *arg) {
 	struct rocket *info = arg;
+	int len = strlen(info->shape);
+	while(1){
+		usleep(ROCKET_SPEED * TUNIT);
+		printRocket(info,info->shape);
+
+		info->row--;
+		if (info->row - len <= 0){
+			printRocket(info,ERASE_SHAPE_ROCKET);
+			info->threadStatus = 0;
+			/*
+			 * Update rockets remaining.
+			 */
+			pthread_mutex_lock(&statusMutex);
+			gameStatus.rocketsLeft--;
+			if(gameStatus.rocketsLeft == 0){
+
+			}
+			pthread_mutex_unlock(&statusMutex);
+		}
+	}
 }
 

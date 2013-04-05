@@ -27,7 +27,9 @@
 
 #define	SAUCER_SHAPE	"<--->"
 
-#define ERASE_SHAPE	"     "
+#define ERASE_SHAPE_SAUCER	"     "
+
+#define ERASE_SHAPE_ROCKET	" "
 
 /*
  * random time interval saucers are created
@@ -49,6 +51,8 @@
  * Predetermined number of saucers escape the game is over
  */
 #define	MAX_ESCAPED_SAUCERS	20
+
+#define	ROCKET_SPEED	8
 
 struct saucer {
 	/*
