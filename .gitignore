@@ -19,3 +19,6 @@
 # project files
 *.cproject
 *.project
+
+# executable files
+saucer
