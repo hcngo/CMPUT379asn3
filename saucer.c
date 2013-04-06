@@ -61,6 +61,7 @@
 int timer = 0;
 int intervalSaucer = RANDOM_INTERVAL;
 pthread_t saucerThreads[MAX_THREADS]; /* the threads*/
+pthread_t rocketThreads[MAX_THREADS];
 pthread_t launchSiteThread;
 
 void *updateTimer(void *arg) {
@@ -76,8 +77,8 @@ void *updateTimer(void *arg) {
 				saucerArray[slot].threadStatus = 1;
 				saucerArray[slot].shape = "<--->";
 
-				pthread_create(&saucerThreads[slot], NULL,
-						drawSaucer, &saucerArray[slot]); // TODO
+				pthread_create(&saucerThreads[slot], NULL, drawSaucer,
+						&saucerArray[slot]); // TODO
 				saucerArrLen++;
 			}
 			timer = 0;
@@ -92,6 +93,7 @@ int main(int ac, char *av[]) {
 	pthread_t displayStatusThread;
 	int iniSaucers; /* number of strings	*/
 	int i;
+	int j;
 
 	iniSaucers = setup(SAUCERS_ROWS);
 
@@ -119,8 +121,7 @@ int main(int ac, char *av[]) {
 		exit(0);
 	}
 
-	if (pthread_create(&launchSiteThread, NULL, displayLaunchSite,
-			&lauSi)) { // TODO
+	if (pthread_create(&launchSiteThread, NULL, displayLaunchSite, &lauSi)) { // TODO
 		fprintf(stderr, "error creating thread");
 		endwin();
 		exit(0);
@@ -133,19 +134,37 @@ int main(int ac, char *av[]) {
 			break;
 		} else if (c == ',' || c == '.') {
 			updateLaunchSite(&lauSi, c);
-			if (pthread_create(&launchSiteThread, NULL,
-					displayLaunchSite, &lauSi)) { // TODO
+			if (pthread_create(&launchSiteThread, NULL, displayLaunchSite,
+					&lauSi)) { // TODO
 				fprintf(stderr, "error creating thread");
 				endwin();
 				exit(0);
 			}
+		} else if (c == 'f') {
+			int slot = findFreeRocketThread();
+			if (slot != -1) {
+				rocketArray[slot].row = lauSi.row - 2;
+				rocketArray[slot].col = lauSi.col + 1;
+				rocketArray[slot].delay = ROCKET_SPEED;
+				rocketArray[slot].threadStatus = 1;
+				rocketArray[slot].shape = "^";
+
+				pthread_create(&rocketThreads[slot], NULL, drawRocket,
+						&rocketArray[slot]); // TODO
+				rocketArrLen++;
+			}
+
 		}
 	}
 
 	/* cancel all the threads */
 	pthread_mutex_lock(&drawMutex);
-	for (i = 0; i < iniSaucers; i++)
+	for (i = 0; i < saucerArrLen; i++) {
 		pthread_cancel(saucerThreads[i]);
+	}
+	for (j = 0; j < rocketArrLen; j++) {
+		pthread_cancel(rocketThreads[j]);
+	}
 	pthread_cancel(timerThread);
 	pthread_cancel(displayStatusThread);
 	pthread_cancel(launchSiteThread);

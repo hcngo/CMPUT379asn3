@@ -29,7 +29,7 @@
 
 #define ERASE_SHAPE_SAUCER	"     "
 
-#define ERASE_SHAPE_ROCKET	" "
+#define ERASE_SHAPE_ROCKET	"   "
 
 /*
  * random time interval saucers are created
@@ -124,12 +124,13 @@ struct launchSite {
 };
 
 extern pthread_mutex_t drawMutex;
+extern pthread_mutex_t statusMutex;
 extern struct saucer saucerArray[MAX_THREADS];
+extern struct rocket rocketArray[MAX_THREADS];
+extern int saucerArrLen;
+extern int rocketArrLen;
 extern struct status gameStatus;
 extern struct launchSite lauSi;
-extern int saucerArrLen;
-
-extern int rocketArrLen;
 
 void updateLaunchSite(struct launchSite * ls, const char keyClick );
 
@@ -138,6 +139,8 @@ void *displayLaunchSite(void *arg);
 void *displayStatus(void *arg);
 
 void *drawSaucer(void *arg);
+
+void *drawRocket(void *arg);
 
 int setup(int iniSaucers);
 
@@ -148,5 +151,11 @@ void printSaucer(const struct saucer *info, const char * str);
  * Return the free position or -1 if there is no free slot.
  */
 int findFreeSaucerThread();
+
+/*
+ * find a free slot (thread data) to faciliate a new thread.
+ * Return the free position or -1 if there is no free slot.
+ */
+int findFreeRocketThread();
 
 #endif /* HELPERS_H_ */

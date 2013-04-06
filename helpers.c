@@ -23,6 +23,14 @@ pthread_mutex_t rocketMutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_mutex_t statusMutex = PTHREAD_MUTEX_INITIALIZER;
 
+void loseMessage() {
+	erase();
+	mvprintw(LINES / 2, COLS / 2, "YOU LOSE!");
+	usleep(2000000);
+	endwin();
+	exit(0);
+}
+
 /*
  * find a free slot (thread data) to faciliate a new thread.
  * Return the free position or -1 if there is no free slot.
@@ -91,7 +99,7 @@ int setup(int iniSaucers) {
 	clear();
 	mvprintw(LINES - 1, 0, "'Q' to quit, ',' to move left,"
 			" '.' to move right, 'f' fires "); // TODO
-	struct launchSite ls = {LINES - 3, (int)COLS/2, "|"};
+	struct launchSite ls = { LINES - 3, (int) COLS / 2, "|" };
 	lauSi = ls;
 
 	return numSaucers;
@@ -110,12 +118,14 @@ void printSaucer(const struct saucer *info, const char * str) {
 	pthread_mutex_unlock(&drawMutex); /* done with curses	*/
 }
 
-void printRocket(const struct rocket *info, const char * str){
+void printRocket(const struct rocket *info, const char * str) {
 	pthread_mutex_lock(&drawMutex);
-	move (info->row, info->col);
+	move(info->row, info->col);
 	addch(' ');
-	move (info->row + 1, info->col);
+	move(info->row + 1, info->col);
 	addstr(str);
+	move(info->row + 2, info->col);
+	addch(' ');
 	move(LINES - 1, COLS - 1);
 	refresh();
 	pthread_mutex_unlock(&drawMutex);
@@ -127,21 +137,21 @@ void *displayStatus(void *arg) {
 		usleep(100000);
 		pthread_mutex_lock(&drawMutex);
 		mvprintw(LINES - 2, 0, "score: %d, rockets left: %d, "
-				"escaped saucers: %d", stat->score,
-				stat->rocketsLeft, stat->escapedSaucers); // TODO
+				"escaped saucers: %d", stat->score, stat->rocketsLeft,
+				stat->escapedSaucers); // TODO
 		move(LINES-1, COLS-1);
 		refresh();
 		pthread_mutex_unlock(&drawMutex);
 	}
 }
 
-void updateLaunchSite(struct launchSite * ls, const char keyClick ){
-	if(keyClick == ','){
-		if(ls->col > 0){
+void updateLaunchSite(struct launchSite * ls, const char keyClick) {
+	if (keyClick == ',') {
+		if (ls->col > 0) {
 			ls->col--;
 		}
-	}else if(keyClick == '.'){
-		if(ls->col < COLS - 2){
+	} else if (keyClick == '.') {
+		if (ls->col < COLS - 2) {
 			ls->col++;
 		}
 	}
@@ -183,11 +193,7 @@ void *drawSaucer(void *arg) {
 			pthread_mutex_lock(&statusMutex);
 			gameStatus.escapedSaucers++;
 			if (gameStatus.escapedSaucers == MAX_ESCAPED_SAUCERS) {
-				clear();
-				mvprintw(LINES/2, COLS/2,"YOU LOSE!");
-				usleep(2000000);
-				endwin();
-				exit(0);
+				loseMessage();
 			}
 			pthread_mutex_unlock(&statusMutex);
 
@@ -197,23 +203,26 @@ void *drawSaucer(void *arg) {
 }
 
 void *drawRocket(void *arg) {
+	pthread_mutex_lock(&statusMutex);
+	gameStatus.rocketsLeft--;
+	pthread_mutex_unlock(&statusMutex);
+
 	struct rocket *info = arg;
 	int len = strlen(info->shape);
-	while(1){
+	while (1) {
 		usleep(ROCKET_SPEED * TUNIT);
-		printRocket(info,info->shape);
+		printRocket(info, info->shape);
 
 		info->row--;
-		if (info->row - len <= 0){
-			printRocket(info,ERASE_SHAPE_ROCKET);
+		if (info->row - len <= 0) {
+			printRocket(info, ERASE_SHAPE_ROCKET);
 			info->threadStatus = 0;
 			/*
 			 * Update rockets remaining.
 			 */
 			pthread_mutex_lock(&statusMutex);
-			gameStatus.rocketsLeft--;
-			if(gameStatus.rocketsLeft == 0){
-
+			if (gameStatus.rocketsLeft == 0) {
+				loseMessage();
 			}
 			pthread_mutex_unlock(&statusMutex);
 		}
