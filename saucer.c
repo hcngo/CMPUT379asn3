@@ -143,8 +143,8 @@ int main(int ac, char *av[]) {
 		} else if (c == 'f') {
 			int slot = findFreeRocketThread();
 			if (slot != -1) {
-				rocketArray[slot].row = lauSi.row - 2;
-				rocketArray[slot].col = lauSi.col + 1;
+				rocketArray[slot].row = lauSi.row;
+				rocketArray[slot].col = lauSi.col;
 				rocketArray[slot].delay = ROCKET_SPEED;
 				rocketArray[slot].threadStatus = 1;
 				rocketArray[slot].shape = "^";

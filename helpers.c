@@ -122,9 +122,9 @@ void printRocket(const struct rocket *info, const char * str) {
 	pthread_mutex_lock(&drawMutex);
 	move(info->row, info->col);
 	addch(' ');
-	move(info->row + 1, info->col);
+	move(info->row - 1, info->col);
 	addstr(str);
-	move(info->row + 2, info->col);
+	move(info->row - 2, info->col);
 	addch(' ');
 	move(LINES - 1, COLS - 1);
 	refresh();
@@ -205,6 +205,9 @@ void *drawSaucer(void *arg) {
 void *drawRocket(void *arg) {
 	pthread_mutex_lock(&statusMutex);
 	gameStatus.rocketsLeft--;
+	if (gameStatus.rocketsLeft < 0) {
+		loseMessage();
+	}
 	pthread_mutex_unlock(&statusMutex);
 
 	struct rocket *info = arg;
@@ -217,14 +220,6 @@ void *drawRocket(void *arg) {
 		if (info->row - len <= 0) {
 			printRocket(info, ERASE_SHAPE_ROCKET);
 			info->threadStatus = 0;
-			/*
-			 * Update rockets remaining.
-			 */
-			pthread_mutex_lock(&statusMutex);
-			if (gameStatus.rocketsLeft == 0) {
-				loseMessage();
-			}
-			pthread_mutex_unlock(&statusMutex);
 		}
 	}
 }
