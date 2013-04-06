@@ -72,7 +72,7 @@ void *updateTimer(void *arg) {
 			if (slot != -1) {
 				saucerArray[slot].row = rand() % SAUCERS_ROWS;
 				saucerArray[slot].col = 0;
-				saucerArray[slot].delay = 1 + (rand() % 15);
+				saucerArray[slot].delay = 1 + (rand() % 10);
 				saucerArray[slot].threadStatus = 1;
 				saucerArray[slot].shape = "<--->";
 
@@ -81,7 +81,7 @@ void *updateTimer(void *arg) {
 				saucerArrLen++;
 			}
 			timer = 0;
-			intervalSaucer = (rand() % 4 + 1) * RANDOM_INTERVAL;
+			intervalSaucer = (rand() % 3 + 1) * RANDOM_INTERVAL;
 		}
 	}
 }
@@ -147,7 +147,10 @@ int main(int ac, char *av[]) {
 	for (i = 0; i < iniSaucers; i++)
 		pthread_cancel(saucerThreads[i]);
 	pthread_cancel(timerThread);
+	pthread_cancel(displayStatusThread);
+	pthread_cancel(launchSiteThread);
+	echo();
 	endwin();
-	return 0;
+	exit(0);
 }
 

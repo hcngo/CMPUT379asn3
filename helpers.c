@@ -183,6 +183,7 @@ void *drawSaucer(void *arg) {
 			pthread_mutex_lock(&statusMutex);
 			gameStatus.escapedSaucers++;
 			if (gameStatus.escapedSaucers == MAX_ESCAPED_SAUCERS) {
+				clear();
 				mvprintw(LINES/2, COLS/2,"YOU LOSE!");
 				usleep(2000000);
 				endwin();

@@ -45,7 +45,7 @@
 /*
  * timeunits in microseconds.
  */
-#define	TUNIT		20000
+#define	TUNIT		15000
 
 /*
  * Predetermined number of saucers escape the game is over
