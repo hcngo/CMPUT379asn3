@@ -29,7 +29,7 @@
 
 #define ERASE_SHAPE_SAUCER	"     "
 
-#define ERASE_SHAPE_ROCKET	"   "
+#define ERASE_SHAPE_ROCKET	" "
 
 /*
  * random time interval saucers are created
@@ -145,6 +145,8 @@ void *drawRocket(void *arg);
 int setup(int iniSaucers);
 
 void printSaucer(const struct saucer *info, const char * str);
+
+void printRocket(const struct rocket *info, const char * str);
 
 /*
  * find a free slot (thread data) to faciliate a new thread.

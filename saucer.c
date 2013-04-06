@@ -63,6 +63,49 @@ int intervalSaucer = RANDOM_INTERVAL;
 pthread_t saucerThreads[MAX_THREADS]; /* the threads*/
 pthread_t rocketThreads[MAX_THREADS];
 pthread_t launchSiteThread;
+pthread_t collideThread;
+
+void *collide(void *arg) {
+	int i, tj;
+	while (1) {
+		usleep(1000);
+		for (i = 0; i < saucerArrLen; i++) {
+			if(saucerArray[i].threadStatus == 0){
+				continue;
+			}
+			for (tj = 0; tj < rocketArrLen; tj++) {
+				if(rocketArray[tj].threadStatus == 0){
+					continue;
+				}
+				int cond1 = saucerArray[i].row == rocketArray[tj].row;
+				int cond2 = saucerArray[i].col <= rocketArray[tj].col;
+				int cond3 = rocketArray[tj].col
+						<= saucerArray[i].col + strlen(saucerArray[i].shape); // TODO
+				if (cond1 != 0 && cond2 != 0 && cond3 != 0) {
+					/*
+					 * collide
+					 */
+					printSaucer(&saucerArray[i], ERASE_SHAPE_SAUCER);
+					printRocket(&rocketArray[tj], ERASE_SHAPE_ROCKET);
+
+					/*
+					 * Update score and reward rockets
+					 */
+					pthread_mutex_lock(&statusMutex);
+					gameStatus.score++;
+					gameStatus.rocketsLeft++;
+					pthread_mutex_unlock(&statusMutex);
+
+					saucerArray[i].threadStatus = 0;
+					rocketArray[tj].threadStatus = 0;
+
+					pthread_cancel(saucerThreads[i]);
+					pthread_cancel(rocketThreads[tj]);
+				}
+			}
+		}
+	}
+}
 
 void *updateTimer(void *arg) {
 	while (1) {
@@ -127,6 +170,12 @@ int main(int ac, char *av[]) {
 		exit(0);
 	}
 
+	if (pthread_create(&collideThread, NULL, collide, NULL)) {
+		fprintf(stderr, "error creating thread");
+		endwin();
+		exit(0);
+	}
+
 	/* process user input */
 	while (1) {
 		c = getch();
@@ -143,7 +192,7 @@ int main(int ac, char *av[]) {
 		} else if (c == 'f') {
 			int slot = findFreeRocketThread();
 			if (slot != -1) {
-				rocketArray[slot].row = lauSi.row;
+				rocketArray[slot].row = lauSi.row - 1;
 				rocketArray[slot].col = lauSi.col;
 				rocketArray[slot].delay = ROCKET_SPEED;
 				rocketArray[slot].threadStatus = 1;
@@ -168,6 +217,7 @@ int main(int ac, char *av[]) {
 	pthread_cancel(timerThread);
 	pthread_cancel(displayStatusThread);
 	pthread_cancel(launchSiteThread);
+	pthread_cancel(collideThread);
 	echo();
 	endwin();
 	exit(0);

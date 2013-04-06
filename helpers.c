@@ -24,8 +24,10 @@ pthread_mutex_t rocketMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t statusMutex = PTHREAD_MUTEX_INITIALIZER;
 
 void loseMessage() {
-	erase();
+	clear();
+	refresh();
 	mvprintw(LINES / 2, COLS / 2, "YOU LOSE!");
+	refresh();
 	usleep(2000000);
 	endwin();
 	exit(0);
@@ -99,6 +101,7 @@ int setup(int iniSaucers) {
 	clear();
 	mvprintw(LINES - 1, 0, "'Q' to quit, ',' to move left,"
 			" '.' to move right, 'f' fires "); // TODO
+	refresh();
 	struct launchSite ls = { LINES - 3, (int) COLS / 2, "|" };
 	lauSi = ls;
 
@@ -120,11 +123,11 @@ void printSaucer(const struct saucer *info, const char * str) {
 
 void printRocket(const struct rocket *info, const char * str) {
 	pthread_mutex_lock(&drawMutex);
-	move(info->row, info->col);
+	move(info->row + 1, info->col);
 	addch(' ');
-	move(info->row - 1, info->col);
+	move(info->row, info->col);
 	addstr(str);
-	move(info->row - 2, info->col);
+	move(info->row - 1, info->col);
 	addch(' ');
 	move(LINES - 1, COLS - 1);
 	refresh();
@@ -136,8 +139,8 @@ void *displayStatus(void *arg) {
 	while (1) {
 		usleep(100000);
 		pthread_mutex_lock(&drawMutex);
-		mvprintw(LINES - 2, 0, "score: %d, rockets left: %d, "
-				"escaped saucers: %d", stat->score, stat->rocketsLeft,
+		mvprintw(LINES - 2, 0, "score: %5d, rockets left: %5d, "
+				"escaped saucers: %5d", stat->score, stat->rocketsLeft,
 				stat->escapedSaucers); // TODO
 		move(LINES-1, COLS-1);
 		refresh();
@@ -217,10 +220,14 @@ void *drawRocket(void *arg) {
 		printRocket(info, info->shape);
 
 		info->row--;
-		if (info->row - len <= 0) {
+		if (info->row < 0) {
 			printRocket(info, ERASE_SHAPE_ROCKET);
 			info->threadStatus = 0;
+
+			pthread_exit(NULL);
 		}
 	}
 }
+
+
 
