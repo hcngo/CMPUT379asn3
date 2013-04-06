@@ -65,7 +65,7 @@ pthread_t launchSiteThread;
 
 void *updateTimer(void *arg) {
 	while (1) {
-		usleep(1000000);
+		usleep(800000);
 		timer++;
 		if (timer == intervalSaucer) {
 			int slot = findFreeSaucerThread();
