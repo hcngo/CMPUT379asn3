@@ -100,7 +100,7 @@ int setup(int iniSaucers) {
 	noecho();
 	clear();
 	mvprintw(LINES - 1, 0, "'Q' to quit, ',' to move left,"
-			" '.' to move right, 'f' fires "); // TODO
+	    " '.' to move right, 'f' fires "); // TODO
 	refresh();
 	struct launchSite ls = { LINES - 2, (int) COLS / 2, "|" };
 	lauSi = ls;
@@ -139,9 +139,11 @@ void *displayStatus(void *arg) {
 	while (1) {
 		usleep(100000);
 		pthread_mutex_lock(&drawMutex);
-		mvprintw(LINES - 1, (int)COLS/2, "score: %5d, rockets left: %5d, "
-				"escaped saucers: %5d", stat->score, stat->rocketsLeft,
-				stat->escapedSaucers); // TODO
+		mvprintw(LINES - 1, (int) COLS / 2,
+		    "score: %5d, rockets left: %5d, "
+		    "escaped saucers: %5d",
+		    stat->score, stat->rocketsLeft,
+		    stat->escapedSaucers); // TODO
 		move(LINES-1, COLS-1);
 		refresh();
 		pthread_mutex_unlock(&drawMutex);
@@ -228,6 +230,4 @@ void *drawRocket(void *arg) {
 		}
 	}
 }
-
-
 

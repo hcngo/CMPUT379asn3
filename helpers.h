@@ -132,7 +132,7 @@ extern int rocketArrLen;
 extern struct status gameStatus;
 extern struct launchSite lauSi;
 
-void updateLaunchSite(struct launchSite * ls, const char keyClick );
+void updateLaunchSite(struct launchSite * ls, const char keyClick);
 
 void *displayLaunchSite(void *arg);
 

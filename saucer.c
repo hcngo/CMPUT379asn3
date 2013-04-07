@@ -36,28 +36,6 @@
 #include "saucer.h"
 #include "helpers.h"
 
-/*
- void updateTimer() {
- pthread_mutex_lock(&timerMutex);
- timer++;
- if (timer == intervalSaucer) {
- int slot = findFreeSaucerThread();
- if (slot != -1) {
- saucerArray[slot].row = rand() % SAUCERS_ROWS;
- saucerArray[slot].delay = 1 + (rand() % 15);
- saucerArray[slot].threadStatus = 1;
- saucerArray[slot].shape = "<--->";
-
- pthread_create(&saucerThreads[slot], NULL, drawSaucer,
- &saucerArray[slot]);
- }
- timer = 0;
- intervalSaucer = (rand() % 4 + 1) * RANDOM_INTERVAL;
- }
- pthread_mutex_unlock(&timerMutex);
- }
- */
-
 int timer = 0;
 int intervalSaucer = RANDOM_INTERVAL;
 pthread_t saucerThreads[MAX_THREADS]; /* the threads*/
@@ -70,23 +48,28 @@ void *collide(void *arg) {
 	while (1) {
 		usleep(1000);
 		for (i = 0; i < saucerArrLen; i++) {
-			if(saucerArray[i].threadStatus == 0){
+			if (saucerArray[i].threadStatus == 0) {
 				continue;
 			}
 			for (tj = 0; tj < rocketArrLen; tj++) {
-				if(rocketArray[tj].threadStatus == 0){
+				if (rocketArray[tj].threadStatus == 0) {
 					continue;
 				}
-				int cond1 = saucerArray[i].row == rocketArray[tj].row;
-				int cond2 = saucerArray[i].col <= rocketArray[tj].col;
+				int cond1 = saucerArray[i].row
+				    == rocketArray[tj].row;
+				int cond2 = saucerArray[i].col
+				    <= rocketArray[tj].col;
 				int cond3 = rocketArray[tj].col
-						<= saucerArray[i].col + strlen(saucerArray[i].shape); // TODO
+				    <= saucerArray[i].col +
+				    strlen( saucerArray[i].shape); // TODO
 				if (cond1 != 0 && cond2 != 0 && cond3 != 0) {
 					/*
 					 * collide
 					 */
-					printSaucer(&saucerArray[i], ERASE_SHAPE_SAUCER);
-					printRocket(&rocketArray[tj], ERASE_SHAPE_ROCKET);
+					printSaucer(&saucerArray[i],
+					    ERASE_SHAPE_SAUCER);
+					printRocket(&rocketArray[tj],
+					    ERASE_SHAPE_ROCKET);
 
 					/*
 					 * Update score and reward rockets
@@ -120,8 +103,8 @@ void *updateTimer(void *arg) {
 				saucerArray[slot].threadStatus = 1;
 				saucerArray[slot].shape = "<--->";
 
-				pthread_create(&saucerThreads[slot], NULL, drawSaucer,
-						&saucerArray[slot]); // TODO
+				pthread_create(&saucerThreads[slot], NULL,
+				    drawSaucer, &saucerArray[slot]); // TODO
 				saucerArrLen++;
 			}
 			timer = 0;
@@ -143,7 +126,7 @@ int main(int ac, char *av[]) {
 	/* create all the threads */
 	for (i = 0; i < iniSaucers; i++) {
 		if (pthread_create(&saucerThreads[i], NULL, drawSaucer,
-				&saucerArray[i])) { // TODO
+		    &saucerArray[i])) { // TODO
 			fprintf(stderr, "error creating thread");
 			endwin();
 			exit(0);
@@ -158,13 +141,14 @@ int main(int ac, char *av[]) {
 	}
 
 	if (pthread_create(&displayStatusThread, NULL, displayStatus,
-			&gameStatus)) { // TODO
+	    &gameStatus)) { // TODO
 		fprintf(stderr, "error creating thread");
 		endwin();
 		exit(0);
 	}
 
-	if (pthread_create(&launchSiteThread, NULL, displayLaunchSite, &lauSi)) { // TODO
+	if (pthread_create(&launchSiteThread, NULL, displayLaunchSite,
+	    &lauSi)) { // TODO
 		fprintf(stderr, "error creating thread");
 		endwin();
 		exit(0);
@@ -183,8 +167,8 @@ int main(int ac, char *av[]) {
 			break;
 		} else if (c == ',' || c == '.') {
 			updateLaunchSite(&lauSi, c);
-			if (pthread_create(&launchSiteThread, NULL, displayLaunchSite,
-					&lauSi)) { // TODO
+			if (pthread_create(&launchSiteThread, NULL,
+			    displayLaunchSite, &lauSi)) { // TODO
 				fprintf(stderr, "error creating thread");
 				endwin();
 				exit(0);
@@ -198,8 +182,8 @@ int main(int ac, char *av[]) {
 				rocketArray[slot].threadStatus = 1;
 				rocketArray[slot].shape = "^";
 
-				pthread_create(&rocketThreads[slot], NULL, drawRocket,
-						&rocketArray[slot]); // TODO
+				pthread_create(&rocketThreads[slot], NULL,
+				    drawRocket, &rocketArray[slot]); // TODO
 				rocketArrLen++;
 			}
 
