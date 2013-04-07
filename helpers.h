@@ -18,7 +18,7 @@
 /*
  * The user initially has a reasonably small number of rockets
  */
-#define	INIROCKETS	30
+#define	INIROCKETS	40
 
 /*
  * Saucers can only occupy the top few lines of the screen
